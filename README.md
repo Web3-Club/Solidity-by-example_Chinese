@@ -12,15 +12,12 @@
 如果您想参与本项目，特别是如果您有能力进行英语-简体中文 翻译，欢迎[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)，为项目发展及其网页翻译作出贡献！
 
 <br>
-<br>
 
 ## ❤️ 项目贡献者
 **永远感谢他们为本项目所作出的贡献！**
 
 [![contrib graph](https://contrib.rocks/image?repo=Web3-Club/solidity-by-example_Chinese)](https://github.com/Web3-Club/solidity-by-example_Chinese/graphs/contributors)
 
-
-<br>
 <br>
 
 ## 💐 赞助我们 
@@ -29,8 +26,6 @@
 您的姓名或昵称将出现在[赞助榜](https://github.com/Web3-Club/Sponsor)界面上。<br>  
 **感谢您对我们社区未来健康发展所作出的支持**
 
-
-<br>
 <br>
 
 ## 📖 LICENCE
