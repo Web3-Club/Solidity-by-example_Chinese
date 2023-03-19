@@ -1,0 +1,71 @@
+以下是 Solidity 代码示例，介绍了一些 Solidity 中的基本数据类型，包括布尔型、无符号整型、有符号整型和地址类型。代码中有详细的注释解释每个数据类型以及变量的含义和使用方式。
+
+```
+# Solidity 基本数据类型
+
+在这里我们向您介绍 Solidity 中可用的一些基本数据类型。
+
+- `boolean` 布尔型
+- `uint256` 无符号整型
+- `int256` 有符号整型
+- `address` 地址类型
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+contract Primitives {
+bool public boo = true;
+
+java
+Copy code
+/*
+uint 代表无符号整型，即非负整数
+不同大小的 uint 可用
+    uint8   范围从 0 到 2 ** 8 - 1
+    uint16  范围从 0 到 2 ** 16 - 1
+    ...
+    uint256 范围从 0 到 2 ** 256 - 1
+*/
+uint8 public u8 = 1;
+uint public u256 = 456;
+uint public u = 123; // uint 是 uint256 的别名
+
+/*
+int 类型允许负数。
+类似于 uint，不同范围的 int 可用，从 int8 到 int256
+
+int256 范围从 -2 ** 255 到 2 ** 255 - 1
+int128 范围从 -2 ** 127 到 2 ** 127 - 1
+*/
+int8 public i8 = -1;
+int public i256 = 456;
+int public i = -123; // int 和 int256 相同
+
+// int 的最小值和最大值
+int public minInt = type(int).min;
+int public maxInt = type(int).max;
+
+address public addr = 0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c;
+
+/*
+在 Solidity 中，byte 数据类型表示一系列字节。
+Solidity 有两种字节类型：
+
+- 固定大小的字节数组
+- 动态大小的字节数组。
+
+在 Solidity 中，字节数组的术语代表字节的动态数组。
+这是 byte[] 的简写。
+*/
+bytes1 a = 0xb5; //  [10110101]
+bytes1 b = 0x56; //  [01010110]
+
+// 默认值
+// 未赋值的变量有一个默认值
+bool public defaultBoo; // false
+uint public defaultUint; // 0
+int public defaultInt; // 0
+address public defaultAddr; // 0x0000000000000000000000000000000000000000
+}
+
+```
