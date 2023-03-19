@@ -5,6 +5,9 @@
 [solidity-by-example](https://solidity-by-example.org/) 文档的 中文翻译 项目<br>
 项目还在施工中
 
+## ✍🏻 翻译需要
+如果您想参与本项目，特别是如果您有能力进行英语-简体中文 翻译，欢迎[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)，为项目发展及其网页翻译作出贡献！
+
 ## ❤️ 项目贡献者
 **永远感谢他们为本项目所作出的贡献！**
 
