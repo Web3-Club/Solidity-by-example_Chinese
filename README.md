@@ -5,6 +5,9 @@
 [solidity-by-example](https://solidity-by-example.org/) 文档的 中文翻译 项目<br>
 项目还在施工中
 
+## 🔖 施工计划
+详见 **[issues#](
+
 <br>
 <br>
 
