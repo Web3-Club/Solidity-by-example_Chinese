@@ -17,7 +17,7 @@
 <br>
 
 ## ❤️ 项目贡献者
-**永远感谢他们为本项目所作出的贡献！**
+**永远感谢他们为本项目所作出的贡献!**
 
 [![contrib graph](https://contrib.rocks/image?repo=Web3-Club/solidity-by-example_Chinese)](https://github.com/Web3-Club/solidity-by-example_Chinese/graphs/contributors)
 
@@ -27,7 +27,7 @@
 🪙 ETH：  ``0xBBc1fE874422F61fB135e72C3229Fffc3Cb266Fb``
 
 您的姓名或昵称将出现在[赞助榜](https://github.com/Web3-Club/Sponsor)界面上。<br>  
-**感谢您对我们社区未来健康发展所作出的支持**
+**感谢您对我们社区未来健康发展所作出的支持!**
 
 ## 👏🏻 特别感谢 
 特别感谢我们的[Premium Sponser](https://github.com/Web3-Club/Sponsor/blob/main/Premium%20sponsors.md)
