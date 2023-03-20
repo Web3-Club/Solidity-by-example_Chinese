@@ -45,6 +45,16 @@
 在此，我们希望为所有的对Web3未来感兴趣和欲为其“添砖加瓦”的朋友们一起,创造出更美好的Web3未来前景！<br>  
 （详见[关于我们](https://github.com/Web3-Club/Intro.#%E7%AE%80%E4%BB%8B) ）
 
+# ⚠️ 免责声明
+
+The organization that developed this object, "Web3Club", is currently a non-profit open source community, not a company or corporationand.
+
+All translations of the project were developed by members and contributors to the project, and any content in the project is protected by an open source licence.
+
+If you have any questions about this, please read the LICENCE section below.
+
+
+
 <br>
 
 ## 📖 LICENCE
