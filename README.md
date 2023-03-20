@@ -52,8 +52,6 @@ All translations of the project were developed by members and contributors to th
 
 If you have any questions about this, please read the LICENCE section below.
 
-
-
 <br>
 
 ## 📖 LICENCE
