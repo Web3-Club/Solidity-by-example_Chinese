@@ -6,7 +6,7 @@
 项目还在施工中
 
 ## 🔖 施工计划
-详见 **[issues#](
+详见 **[issues#2](https://github.com/Web3-Club/solidity-by-example_Chinese/issues/2)**
 
 <br>
 <br>
