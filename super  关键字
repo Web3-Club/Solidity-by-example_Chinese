@@ -1,0 +1,38 @@
+# `super` 关键字
+
+在合约继承中，使用 `super` 关键字可以访问基类中的函数和状态变量。
+
+以下示例演示了如何使用 `super` 关键字来访问基类中的函数和状态变量。
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.3;
+
+contract A {
+    uint256 public myUint;
+
+    function setMyUint(uint256 _myUint) public {
+        myUint = _myUint;
+    }
+}
+
+contract B is A {
+    function setMyUint(uint256 _myUint) public {
+        super.setMyUint(_myUint + 1);
+    }
+}
+```
+
+- `A` 合约定义了一个名为 `myUint` 的状态变量，并定义了一个名为 `setMyUint` 的可公开函数。
+- `B` 合约继承了 `A` 合约，并重写了 `setMyUint` 函数。在重写的函数中，我们使用 `super` 关键字调用基类的 `setMyUint` 函数，并将 `_myUint` 参数的值加上 `1` 传递给它。
+
+现在，我们可以部署 `B` 合约并调用 `setMyUint` 函数来更新 `myUint` 的值。
+
+![super-remix](https://user-images.githubusercontent.com/67719429/135938308-66decc7e-a74a-4b1f-9ed9-c5dfeb1946c2.png)
+
+我们可以看到，在调用 `B` 合约的 `setMyUint` 函数后，`myUint` 变量的值为 `11`。
+
+## 注意
+
+- 只能从一个合约继承。
+- 只能访问基类中可公开的函数和状态变量。
