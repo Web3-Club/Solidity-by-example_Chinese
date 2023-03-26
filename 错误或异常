@@ -1,0 +1,111 @@
+# 错误和异常
+
+Solidity 在处理异常和错误时具有一系列功能。存在许多情况，应该在智能合约中处理异常或错误。
+
+在这份练习中，我们将研究以下内容：
+
+- 标准异常（ Standard Exceptions ）
+- Solidity 0.8.0 中添加的新字面量错误（ new Literal Errors）
+
+## 标准异常
+
+Solidity 有几个标准异常。 这些异常可以在 `revert` 函数中使用，例如：
+
+```solidity
+revert("Error message");
+```
+
+让我们看看可以使用的异常类型：
+
+### 断言失败（ AssertionError）
+
+当断言语句 `assert` 的参数为 false时，会抛出 AssertionError 异常。
+
+```solidityassert(x != 5);
+```
+
+### 要求失败（ RequireError ）
+
+当 `require`语句的参数为 false 时，会抛出 `RequireError` 异常。
+
+```solidity
+require(x != 5);
+```
+
+### 线性退款异常（ LinearizeException ）
+
+线性退款异常在函数调用的以太坊虚拟机上下文中使用。
+
+当函数的调用深度超过 63 级，并且需要退款时，将抛出此异常。
+
+### 操作码错误（ OpcodeError ）
+
+当使用 Solidity 汇编语言编写的操作码具有错误的操作宽度时，会抛出 OpcodeError 异常。 
+
+### 状态根错误/状态异常（ StateException ）
+
+这种异常意味着区块链的状态与当前智能合约的期望状态不符。
+
+#### 实例
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract ExceptionExample {
+    int[] public numbers;
+    uint public counter;
+
+    function addition(uint _addend) public returns (uint) {
+        counter++;
+        numbers.push(int(_addend));
+
+        if (_addend == 0) {
+            revert("Cannot be 0");
+        }
+
+        return counter;
+    }
+
+    function readNumber(uint _index) public view returns (int) {
+        return numbers[_index];
+    }
+}
+```
+
+在这个合约中，如果我们向 `addition` 函数传递 `0`，则会抛出错误消息。
+
+## 字面量错误
+
+新的 Solidity 0.8.0 版本添加了几个新的字面量错误。
+
+这些错误是：
+
+```solidity
+emit Error("Error message");
+emit OutOfGasError("Out of gas");
+emit InvalidJumpError("Invalid jump");
+emit InvalidRangeError("Invalid instruction");
+emit OverFlowError("Overflow");
+emit DivisionError("Division by zero");
+```
+
+这些新的字面量错误使我们不必显式地调用 `revert` 函数来返回错误消息。
+
+这是一个使用 `OverflowError` 字面值的示例：
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract LiteralErrorExample {
+    uint8 public myUint8;
+
+    function overflowError() public {
+        myUint8 += 255;
+        emit OverFlowError("An overflow issue has occurred");
+    }
+}
+```
+
+如上所述，如果该函数被调用，则会触发字面量异常。
