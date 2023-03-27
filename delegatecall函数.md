@@ -2,26 +2,43 @@
 
 > 本文介绍了 Solidity 中的 `delegatecall()` 函数及其使用。
 
+delegatecall 是类似于调用的低级函数。 
+
+当合约A对合约B执行delegatecall时，执行B的代码 与合约 A 的存储，msg.sender 和 msg.value。
+
 ## 示例
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
+
+// NOTE: Deploy this contract first
+contract B {
+    // NOTE: storage layout must be the same as contract A
+    uint public num;
+    address public sender;
+    uint public value;
+
+    function setVars(uint _num) public payable {
+        num = _num;
+        sender = msg.sender;
+        value = msg.value;
+    }
+}
 
 contract A {
-    function foo(uint256 _i, uint256 _j) public pure returns (uint256 result) {
-        return _i + _j;
+    uint public num;
+    address public sender;
+    uint public value;
+
+    function setVars(address _contract, uint _num) public payable {
+        // A's storage is set, B is not modified.
+        (bool success, bytes memory data) = _contract.delegatecall(
+            abi.encodeWithSignature("setVars(uint256)", _num)
+        );
     }
 }
 
-contract B {
-    function bar(address _dst, uint256 _i, uint256 _j) public returns (uint256 result) {
-        bytes memory payload = abi.encodeWithSignature("foo(uint256,uint256)", _i, _j);
-        (bool success, bytes memory returnData) = _dst.delegatecall(payload);
-        require(success);
-        return abi.decode(returnData, (uint256));
-    }
-}
 ```
 
 在上面的示例中，我们定义了两个智能合约 `A` 和 `B`。`A` 合约包含一个名为 `foo()` 的函数，该函数接受两个数字参数并返回它们的总和。`B` 合约包含一个名为 `bar()` 的函数，该函数向另一个合约地址发送一个 `delegatecall()`，并将 `foo()` 函数的输入参数 `_i` 和 `_j` 作为参数传递。`bar()` 函数将返回 `foo()` 函数返回值的总和。

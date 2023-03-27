@@ -1,6 +1,6 @@
 # ABI Decode
 
-Solidity By Example 是一个学习 Solidity 编程语言的网站。本页面介绍了如何使用 JavaScript 和 web3.js 库解码以太坊智能合约的 ABI（Application Binary Interface）编码。
+本页面介绍了如何使用 JavaScript 和 web3.js 库解码以太坊智能合约的 ABI（Application Binary Interface）编码。
 
 ## 什么是 ABI？
 

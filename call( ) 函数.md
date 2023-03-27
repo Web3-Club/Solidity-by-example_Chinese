@@ -2,32 +2,85 @@
 
 > 本文介绍了 Solidity 中的 `call()` 函数及其使用。
 
+call 是与其他合约交互的低级函数。
+
+当您只是通过调用回退函数发送 Ether 时，这是推荐使用的方法。
+
+但是，这不是调用现有函数的推荐方式。
+
+不推荐低级调用的几个原因
+- 还原不会冒泡
+- 绕过类型检查
+- 函数存在性检查被省略
 ## 示例
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
+
+contract Receiver {
+    event Received(address caller, uint amount, string message);
+
+    fallback() external payable {
+        emit Received(msg.sender, msg.value, "Fallback was called");
+    }
+
+    function foo(string memory _message, uint _x) public payable returns (uint) {
+        emit Received(msg.sender, msg.value, _message);
+
+        return _x + 1;
+    }
+}
 
 contract Caller {
     event Response(bool success, bytes data);
 
-    function testCall(address payable _addr) public payable {
-        // 向 `_addr` 地址发送 1 wei 的以太币，并调用其 `foo()` 函数
-        (bool success, bytes memory data) = _addr.call{value: 1 wei}(abi.encodeWithSignature("foo(string,uint256)", "hello", 123));
+    // Let's imagine that contract Caller does not have the source code for the
+    // contract Receiver, but we do know the address of contract Receiver and the function to call.
+    function testCallFoo(address payable _addr) public payable {
+        // You can send ether and specify a custom gas amount
+        (bool success, bytes memory data) = _addr.call{value: msg.value, gas: 5000}(
+            abi.encodeWithSignature("foo(string,uint256)", "call foo", 123)
+        );
+
+        emit Response(success, data);
+    }
+
+    // Calling a function that does not exist triggers the fallback function.
+    function testCallDoesNotExist(address payable _addr) public payable {
+        (bool success, bytes memory data) = _addr.call{value: msg.value}(
+            abi.encodeWithSignature("doesNotExist()")
+        );
+
         emit Response(success, data);
     }
 }
 
-contract Callee {
-    function foo(string memory _greeting, uint256 _number) public pure returns (bytes memory) {
-        return abi.encodePacked(_greeting, _number);
-    }
-}
 ```
 
 在上面的示例中，我们定义了两个智能合约 `Caller` 和 `Callee`。`Caller` 合约包含一个名为 `testCall()` 的函数，该函数向指定地址发送 1 wei 的以太币，并调用 `Callee` 合约中的 `foo()` 函数。当 `foo()` 函数被调用时，它将返回一个编码后的字符串和数字。
 
 请注意，我们使用了 `call()` 函数来实现这个过程，并使用 `abi.encodeWithSignature()` 函数对参数进行编码。
+
+这是一个测试从多重签名钱包发送交易的合同：
+
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+contract TestContract {
+    uint public i;
+
+    function callMe(uint j) public {
+        i += j;
+    }
+
+    function getData() public pure returns (bytes memory) {
+        return abi.encodeWithSignature("callMe(uint256)", 123);
+    }
+}
+
+```
 
 ## 详解
 

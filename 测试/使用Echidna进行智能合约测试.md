@@ -10,28 +10,84 @@ Echidna是一个用于Solidity智能合约的快速模糊测试工具，旨在�
 
 我们将使用名为 `Overflow` 的简单智能合约进行测试。该合约允许用户存款和提款资金，但由于没有正确处理整数溢出，因此可能存在安全漏洞。
 
+## 示例
+使用 Echidna 进行模糊测试的示例。
+
+将 solidity 合约保存为 TestEchidna.sol
+在存储合约的文件夹中执行以下命令。
+
+```
+docker run -it --rm -v $PWD:/code trailofbits/eth-security-toolbox
+```
+
+在 docker 内部，您的代码将存储在 /code
+
+请参阅下面的示例 并执行 echidna-test 命令。
+
 ```solidity
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-contract Overflow {
-    uint256 private balance = 1 ether;
-    uint256 private constant maxWithdraw = 0.5 ether;
+/*
+echidna-test TestEchidna.sol --contract TestCounter
+*/
+contract Counter {
+    uint public count;
 
-    function getBalance() public view returns (uint256) {
-        return balance;
+    function inc() external {
+        count += 1;
     }
 
-    function withdraw(uint256 _amount) public {
-        require(_amount <= maxWithdraw);
-        require(balance >= _amount);
-        msg.sender.transfer(_amount);
-        balance -= _amount;
-    }
-
-    function deposit() public payable {
-        balance += msg.value;
+    function dec() external {
+        count -= 1;
     }
 }
+
+contract TestCounter is Counter {
+    function echidna_test_true() public view returns (bool) {
+        return true;
+    }
+
+    function echidna_test_false() public view returns (bool) {
+        return false;
+    }
+
+    function echidna_test_count() public view returns (bool) {
+        // Here we are testing that Counter.count should always be <= 5.
+        // Test will fail. Echidna is smart enough to call Counter.inc() more
+        // than 5 times.
+        return count <= 5;
+    }
+}
+
+/*
+echidna-test TestEchidna.sol --contract TestAssert --check-asserts
+*/
+contract TestAssert {
+    // Asserts not detected in 0.8.
+    // Switch to 0.7 to test assertions
+    function test_assert(uint _i) external {
+        assert(_i < 10);
+    }
+
+    // More complex example
+    function abs(uint x, uint y) private pure returns (uint) {
+        if (x >= y) {
+            return x - y;
+        }
+        return y - x;
+    }
+
+    function test_abs(uint x, uint y) external {
+        uint z = abs(x, y);
+        if (x >= y) {
+            assert(z <= x);
+        } else {
+            assert(z <= y);
+        }
+    }
+}
+
 ```
 
 在此示例中，我们定义了一个名为 `Overflow` 的合约，它允许用户存款和提款资金。合约使用 `balance` 变量跟踪存储在合约中的资金金额，并使用 `maxWithdraw` 常量来限制每个提款操作的最大金额。

@@ -2,24 +2,49 @@
 
 > 本文介绍了 Solidity 中的 `payable` 函数修饰符，它允许合约接收以太币。
 
+声明为 payable 的函数和地址可以将以太币接收到合约中。
+
 ## 示例
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
 
-contract ReceiveEther {
-    // 当有人向这个合约发送以太币时，该函数会被调用
-    receive() external payable {
+pragma solidity ^0.8.17;
+
+contract Payable {
+    // Payable地址可以接收以太币
+    address payable public owner;
+
+    // Payable构造函数可以接收以太币
+    constructor() payable {
+        owner = payable(msg.sender);
     }
-    
-    // 向这个合约发送以太币
-    function sendEther() external payable {
+
+    // 存入以太币到智能合约的函数。
+    // 与一些以太币一起调用此函数。
+    // 智能合约的余额将自动更新。
+    function deposit() public payable {}
+
+    // 与一些以太币一起调用此函数。
+    // 由于此函数不可支付，因此该函数将抛出错误。
+    function notPayable() public {}
+
+    // 从智能合约中提取所有以太币的函数。
+    function withdraw() public {
+        // 获取存储在此合约中的以太币数量
+        uint amount = address(this).balance;
+
+        // 将所有以太币发送给拥有者
+        // 由于所有者的地址是可支付的，因此其可以接收以太币
+        (bool success, ) = owner.call{value: amount}("");
+        require(success, "Failed to send Ether");
     }
-    
-    // 获取合约余额
-    function getBalance() external view returns (uint) {
-        return address(this).balance;
+
+    // 将以太币从此合约转移到输入地址的函数
+    function transfer(address payable _to, uint _amount) public {
+        // 注意，“to”被声明为payable
+        (bool success, ) = _to.call{value: _amount}("");
+        require(success, "Failed to send Ether");
     }
 }
 ```
