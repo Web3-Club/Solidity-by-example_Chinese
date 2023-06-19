@@ -42,7 +42,7 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 <a href="https://abetterweb3.notion.site"><img src="https://user-images.githubusercontent.com/76860915/220133607-dddc3468-0cda-4065-bce3-3b275dfe6ad1.png" alt="abetterweb3">
 
 ## 😃 关于我们 
-**这里是中国Web3知识协会，成立于2023年2月7日**<br>  
+**这里是Web3Club，成立于2023年2月7日**<br>  
 （也许是，也希望未来是）中国最早的Web3知识 开源建设社群<br>  
 我们建立的初衷是因为创始人烟波,苦于中文互联网中的 Web3 相关知识分享内容相对较少，而为了改变这一现状，希望未来能整合和拓宽这类方向相关的 中文知识内容，从而建立了该组织。<br>  
 
