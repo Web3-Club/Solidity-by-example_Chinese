@@ -19,8 +19,8 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 <br>
 
 ## 更新日志
-        2023.3.19-2023.6.26 完成  Hello World - Unchecked Math 部分翻译
-                            完成  Application 部分的  Ether Wallet -  Precompute Contract Address with Create2
+        2023.3.19-2023.6.26 完成  Hello World - Unchecked Math 板块翻译
+                            完成  Application 部分的  Ether Wallet -  Precompute Contract Address with Create2 板块翻译
 
 
 
