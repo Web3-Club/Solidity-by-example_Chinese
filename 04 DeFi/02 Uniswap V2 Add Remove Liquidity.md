@@ -227,5 +227,16 @@ contract UniswapV2AddLiquidityTest is Test {
 }
 ```
 
+---
+## 关注我们
+### Twitter
+[Yanbo的Twitter](https://twitter.com/YanboOfficial)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
 
+### GitHub
+[Web3Club](https://github.com/Web3-Club)
 
+### Web3Club 官方讨论群
+YanboTravelAllWorld（微信号）
+
+### 加入我们
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)
