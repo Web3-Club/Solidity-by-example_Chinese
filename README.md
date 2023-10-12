@@ -1,8 +1,8 @@
-# solidity-by-example 文档 简体中文翻译
+# solidity-by-example 文档 简体中文翻译+
 [![开源授权](https://img.shields.io/github/license/Web3-Club/solidity-by-example_Chinese)](https://github.com/Web3-Club/solidity-by-example_Chinese)                                                                                      [![GitHub stars](https://img.shields.io/github/stars/Web3-Club/solidity-by-example_Chinese.svg?style=social&label=Stars)](https://github.com/Web3-Club/solidity-by-example_Chinese)                                   [![GitHub watchers](https://img.shields.io/github/watchers/Web3-Club/solidity-by-example_Chinese.svg?style=social&label=Watch)](https://github.com/Web3-Club/solidity-by-example_Chinese)<br><br><br>
 
 ## 简介
-[solidity-by-example](https://solidity-by-example.org/) 文档 简体中文翻译 项目<br>
+[solidity-by-example](https://solidity-by-example.org/) 文档 ""简体中文翻译+ "项目<br>
 项目还在施工中
 
 Solidity是一种编程语言，专门用于在以太坊区块链上编写智能合约。智能合约是一种自动执行的合约，它们旨在简化和加速各种交易，例如资产转移、投票和奖励分配。Solidity可以让开发人员创建这些合约，并在以太坊网络上部署和运行它们。
@@ -19,6 +19,7 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 <br>
 
 ## 更新日志
+        2023/10/11-2023/10/12 对部分板块进行解释扩充和代码实例
         2023/03/19-2023/06/26 完成  Hello World - Unchecked Math 板块翻译
                               完成  Application 部分的  Ether Wallet -  Precompute Contract Address with Create2 板块翻译
 
@@ -64,7 +65,7 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 The organization that developed this project, "Web3Club", is currently a non-profit open source community, not a company or corporationand.
 
 All translations of the project were developed by members and contributors to the project, and any content in the project is protected by an open source licence，
-  
+
 We always open source the original open source project in accordance with the license of the original open source project before translation.And in accordance with the requirements of the licence,the information of the original English project or the original author will be indicated in the following sections.
 
 If you have any questions about licence or copyright, please read the LICENCE section below or contact us at web3clubCN@outlook.com
