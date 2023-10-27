@@ -61,7 +61,6 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 （详见[关于我们](https://github.com/Web3-Club/Intro.#%E7%AE%80%E4%BB%8B) ）
 
 
-![Uploading 68747470733a2f2f7777772e646f6e617465332e78797a2f446f6e61746533546f4d652e737667.svg…]()
 
 
 https://www.donate3.xyz/donateTo?cid=bafkreif5ecvwp7vanir2geib43nws7zvaac46rvlryzwwm47knutcv6xee
