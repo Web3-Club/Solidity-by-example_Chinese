@@ -1,4 +1,4 @@
-![68747470733a2f2f7777772e646f6e617465332e78797a2f446f6e61746533546f4d652e737667](https://github.com/Web3-Club/solidity-by-example_Chinese/assets/76860915/22d0fc03-ff8e-405e-942e-b6d1675b2d60)![68747470733a2f2f7777772e646f6e617465332e78797a2f446f6e61746533546f4d652e737667](https://github.com/Web3-Club/solidity-by-example_Chinese/assets/76860915/5323bada-377e-4b76-a8e1-1197cd55fccd)# solidity-by-example 文档 简体中文翻译
+# solidity-by-example 文档 简体中文翻译
 [![开源授权](https://img.shields.io/github/license/Web3-Club/solidity-by-example_Chinese)](https://github.com/Web3-Club/solidity-by-example_Chinese)                                                                                      [![GitHub stars](https://img.shields.io/github/stars/Web3-Club/solidity-by-example_Chinese.svg?style=social&label=Stars)](https://github.com/Web3-Club/solidity-by-example_Chinese)                                   [![GitHub watchers](https://img.shields.io/github/watchers/Web3-Club/solidity-by-example_Chinese.svg?style=social&label=Watch)](https://github.com/Web3-Club/solidity-by-example_Chinese)<br><br><br>
 
 ## 简介
@@ -62,6 +62,7 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 
 
 
+![68747470733a2f2f7777772e646f6e617465332e78797a2f446f6e61746533546f4d652e737667](https://github.com/Web3-Club/solidity-by-example_Chinese/assets/76860915/22d0fc03-ff8e-405e-942e-b6d1675b2d60)
 
 https://www.donate3.xyz/donateTo?cid=bafkreif5ecvwp7vanir2geib43nws7zvaac46rvlryzwwm47knutcv6xee
 
