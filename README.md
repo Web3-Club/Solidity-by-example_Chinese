@@ -47,7 +47,8 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 ## 💐 赞助我们 
 ### 通过Donate3
 
-<a href="https://www.donate3.xyz/donateTo?cid=bafkreif5ecvwp7vanir2geib43nws7zvaac46rvlryzwwm47knutcv6xee"><img src="https://github.com/Web3-Club/solidity-by-example_Chinese/assets/76860915/22d0fc03-ff8e-405e-942e-b6d1675b2d60" alt="Donate3"></a>
+<a href="https://www.donate3.xyz/donateTo?cid=bafkreif5ecvwp7vanir2geib43nws7zvaac46rvlryzwwm47knutcv6xee"><img src="https://github.com/Web3-Club/solidity-by-example_Chinese/assets/76860915/22d0fc03-ff8e-405e-942e-b6d1675b2d60" alt="Donate3">
+</a>
 
 
 您的钱包地址将出现在[赞助榜](https://github.com/Web3-Club/Sponsor)界面上。<br>  
