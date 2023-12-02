@@ -7,7 +7,7 @@
             alt="follow on Twitter"></a>
 
 ## 简介
-[solidity-by-example](https://solidity-by-example.org/) 文档 ""简体中文翻译+ "项目<br>
+[solidity-by-example](https://solidity-by-example.org/) 文档 简体中文翻译 项目<br>
 项目还在施工中
 
 Solidity是一种编程语言，专门用于在以太坊区块链上编写智能合约。智能合约是一种自动执行的合约，它们旨在简化和加速各种交易，例如资产转移、投票和奖励分配。Solidity可以让开发人员创建这些合约，并在以太坊网络上部署和运行它们。
