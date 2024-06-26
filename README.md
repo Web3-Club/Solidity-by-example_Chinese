@@ -29,6 +29,8 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
                               完成  Application 部分的  Ether Wallet -  Precompute Contract Address with Create2 板块翻译
         2023/10/11-2023/10/12 对部分板块进行解释扩充和代码实例的加入
         2024/02/21 优化目录
+        2024/06/21 完成 folder：应用，Unit5 黑客攻击及预防
+                   name：双向支付渠道 众筹基金、英式拍卖、荷兰式拍卖、 多调用，多委托调用，定时锁，汇编中的二进制求幂（应用），重入攻击（黑客攻击及预防）
 
 <br>
 
