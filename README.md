@@ -17,7 +17,7 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 使用Solidity，开发人员可以构建去中心化应用程序（DApps），这些应用程序可以为用户提供更安全、更透明和更可靠的服务。由于Solidity具有向后兼容性，因此开发人员可以轻松地升级他们的智能合约以实现更好的性能和更丰富的功能。
 
 ---
-Solidity-by-example是一个展示Solidity各种用法的仓库，本仓库是对于其英语版的翻译。 
+[solidity-by-example](https://solidity-by-example.org/) 是一个展示Solidity各种用法的仓库，本仓库是对于其英语版的翻译。 
 
 
 ## 🔖 施工计划
