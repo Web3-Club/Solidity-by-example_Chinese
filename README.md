@@ -61,9 +61,8 @@ Solidity是一种类似于JavaScript的面向对象语言，具有与其他高�
 （详见[关于我们](https://github.com/Web3-Club/Intro.#%E7%AE%80%E4%BB%8B) ）
 
 
-
-### 加入交流群
-WeChat:YanboAtWeb3
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=Web3-Club/Solidity-by-example_Chinese&type=Date)](https://star-history.com/#Web3-Club/Solidity-by-example_Chinese/&Date)
 
 
 # ⚠️ 免责声明
