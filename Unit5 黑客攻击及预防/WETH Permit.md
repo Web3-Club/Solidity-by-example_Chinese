@@ -1,32 +1,27 @@
 # WETH Permit
 
-## 弱点
+对应英文原页：https://solidity-by-example.org/hacks/weth-permit
 
-大部分ERC20合约有`Permit`函数来提供spender的签名检测。
+## 漏洞
 
-但是`WETH`合约并没有。而当调用`WETH`的`permit`函数的时候，这个过程并不会发生任何错误。因为`fallback`函数的存在，当调用`permit`函数的时候，WETH会直接调用`fallback`函数。
+大多数 ERC20 都有 `permit` 函数：如果提供有效签名，就可以批准 spender。
 
+然而 `WETH` 没有。令人惊讶的是，在 `WETH` 上调用 `permit` 时，函数调用会执行且不会报错。
 
+这是因为调用 `permit` 时，会执行 `WETH` 内部的 `fallback`。
 
-## 例子
+## 示例
 
-1.Alice对ERC20Bank给予无限授权以支出WETH
+0. Alice 给予 `ERC20Bank` 无限授权以花费 `WETH`
+1. Alice 调用 `deposit`，向 `ERC20Bank` 存入 1 WETH
+2. 攻击者调用 `depositWithPermit`，传入空签名，把 Alice 的全部代币转入 `ERC20Bank`，并把存款记到攻击者名下。
+3. 攻击者提取记到自己名下的全部代币。
 
-2.Alice调用deposit，存入1个WETH到ERC20Bank
-
-3.攻击者调用depositWithPermit，传递一个空的签名并将所有来自Alice的代币转入ERC20Bank，将存款记入攻击者名下。
-
-4.攻击者提取所有记在他名下的代币。
-
-
-
-## 相关合约代码
-
-**ERC20Bank**
+## ERC20Bank
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import "./IERC20Permit.sol";
 
@@ -62,16 +57,13 @@ contract ERC20Bank {
         token.transfer(msg.sender, _amount);
     }
 }
-
 ```
 
-
-
-**Exploit**
+## 攻击
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity 0.8.26;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {WETH} from "../../../src/hacks/weth-permit/WETH.sol";
@@ -110,6 +102,168 @@ contract ERC20BankExploitTest is Test {
         );
     }
 }
-
 ```
 
+## 其他合约
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender)
+        external
+        view
+        returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transfer(address dst, uint256 amount) external returns (bool);
+    function transferFrom(address src, address dst, uint256 amount)
+        external
+        returns (bool);
+
+    event Transfer(address indexed src, address indexed dst, uint256 amount);
+    event Approval(
+        address indexed owner, address indexed spender, uint256 amount
+    );
+}
+```
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import "./IERC20.sol";
+
+interface IERC20Permit is IERC20 {
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+}
+```
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+abstract contract ERC20 {
+    event Transfer(address indexed from, address indexed to, uint256 amount);
+    event Approval(
+        address indexed owner, address indexed spender, uint256 amount
+    );
+
+    string public name;
+    string public symbol;
+    uint8 public immutable decimals;
+
+    uint256 public totalSupply;
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
+    }
+
+    function approve(address spender, uint256 amount)
+        public
+        virtual
+        returns (bool)
+    {
+        allowance[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function transfer(address to, uint256 amount)
+        public
+        virtual
+        returns (bool)
+    {
+        balanceOf[msg.sender] -= amount;
+        unchecked {
+            balanceOf[to] += amount;
+        }
+        emit Transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount)
+        public
+        virtual
+        returns (bool)
+    {
+        uint256 allowed = allowance[from][msg.sender];
+        if (allowed != type(uint256).max) {
+            allowance[from][msg.sender] = allowed - amount;
+        }
+        balanceOf[from] -= amount;
+        unchecked {
+            balanceOf[to] += amount;
+        }
+        emit Transfer(from, to, amount);
+        return true;
+    }
+
+    function _mint(address to, uint256 amount) internal virtual {
+        totalSupply += amount;
+        unchecked {
+            balanceOf[to] += amount;
+        }
+        emit Transfer(address(0), to, amount);
+    }
+
+    function _burn(address from, uint256 amount) internal virtual {
+        balanceOf[from] -= amount;
+        unchecked {
+            totalSupply -= amount;
+        }
+        emit Transfer(from, address(0), amount);
+    }
+}
+```
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import "./ERC20.sol";
+
+contract WETH is ERC20 {
+    event Deposit(address indexed account, uint256 amount);
+    event Withdraw(address indexed account, uint256 amount);
+
+    constructor() ERC20("Wrapped Ether", "WETH", 18) {}
+
+    fallback() external payable {
+        deposit();
+    }
+
+    function deposit() public payable {
+        _mint(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value);
+    }
+
+    function withdraw(uint256 amount) external {
+        _burn(msg.sender, amount);
+        payable(msg.sender).transfer(amount);
+        emit Withdraw(msg.sender, amount);
+    }
+}
+```
+
+---
+## 关注我们
+[Yanbo的Twitter](https://twitter.com/YanboOfficial)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+加入Web3Club 官方讨论群：YanboTravelAllWorld（微信号）
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)
