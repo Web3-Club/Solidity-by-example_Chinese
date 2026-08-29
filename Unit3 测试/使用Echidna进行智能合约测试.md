@@ -1,38 +1,29 @@
-# 使用Echidna进行智能合约测试
+# 使用 Echidna 测试智能合约
 
-Echidna是一个用于Solidity智能合约的快速模糊测试工具，旨在帮助开发人员发现安全漏洞和错误。在本示例中，我们将展示如何使用Echidna对名为 `Overflow` 的合约进行测试。
+对应英文原页：https://solidity-by-example.org/tests/echidna
 
-## 安装Echidna
+使用 [Echidna](https://github.com/crytic/echidna) 进行模糊测试的示例。
 
-首先，您需要在计算机上安装Echidna。您可以从 https://github.com/trailofbits/echidna/releases 下载适用于您的操作系统的二进制文件，并根据说明进行安装。
+1. 将 solidity 合约保存为 `TestEchidna.sol`
+2. 在存储合约的文件夹中执行以下命令。
 
-## 准备智能合约
-
-我们将使用名为 `Overflow` 的简单智能合约进行测试。该合约允许用户存款和提款资金，但由于没有正确处理整数溢出，因此可能存在安全漏洞。
-
-## 示例
-使用 Echidna 进行模糊测试的示例。
-
-将 solidity 合约保存为 TestEchidna.sol
-在存储合约的文件夹中执行以下命令。
-
-```
+```shell
 docker run -it --rm -v $PWD:/code trailofbits/eth-security-toolbox
 ```
 
-在 docker 内部，您的代码将存储在 /code
+在 docker 内部，你的代码会存放在根目录下的 `/code`。
 
-请参阅下面的示例 并执行 echidna-test 命令。
+3. 参见下面的注释并执行 `echidna` 命令。
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.26;
 
 /*
-echidna-test TestEchidna.sol --contract TestCounter
+echidna TestEchidna.sol --contract TestCounter
 */
 contract Counter {
-    uint public count;
+    uint256 public count;
 
     function inc() external {
         count += 1;
@@ -53,33 +44,31 @@ contract TestCounter is Counter {
     }
 
     function echidna_test_count() public view returns (bool) {
-        // Here we are testing that Counter.count should always be <= 5.
-        // Test will fail. Echidna is smart enough to call Counter.inc() more
-        // than 5 times.
+        // 这里我们测试 Counter.count 应始终 <= 5。
+        // 测试会失败。Echidna 足够聪明，会调用 Counter.inc()
+        // 超过 5 次。
         return count <= 5;
     }
 }
 
 /*
-echidna-test TestEchidna.sol --contract TestAssert --check-asserts
+echidna TestEchidna.sol --contract TestAssert --test-mode assertion
 */
 contract TestAssert {
-    // Asserts not detected in 0.8.
-    // Switch to 0.7 to test assertions
-    function test_assert(uint _i) external {
+    function test_assert(uint256 _i) external {
         assert(_i < 10);
     }
 
-    // More complex example
-    function abs(uint x, uint y) private pure returns (uint) {
+    // 更复杂的示例
+    function abs(uint256 x, uint256 y) private pure returns (uint256) {
         if (x >= y) {
             return x - y;
         }
         return y - x;
     }
 
-    function test_abs(uint x, uint y) external {
-        uint z = abs(x, y);
+    function test_abs(uint256 x, uint256 y) external {
+        uint256 z = abs(x, y);
         if (x >= y) {
             assert(z <= x);
         } else {
@@ -90,20 +79,77 @@ contract TestAssert {
 
 ```
 
-在此示例中，我们定义了一个名为 `Overflow` 的合约，它允许用户存款和提款资金。合约使用 `balance` 变量跟踪存储在合约中的资金金额，并使用 `maxWithdraw` 常量来限制每个提款操作的最大金额。
+### 测试时间和调用者
 
-但是，在此示例中，我们故意添加了一个易受攻击的语句 `balance -= _amount;`，它允许黑客攻击者利用整数溢出来窃取存储在合约中的资金。当 `balance` 变量的值超过2^256时，该变量将重新从0开始，导致黑客攻击者可以提款比其余存储在合约中的资金更多的金额。
+Echidna 可以对时间戳进行模糊测试。时间戳范围在配置中设置。默认是 7 天。
 
-## 运行Echidna测试
+合约调用者也可以在配置中设置。默认账户为
 
-一旦您准备好要测试的智能合约，就可以使用Echidna运行测试。为此，请按照以下步骤操作：
+- `0x10000`
+- `0x20000`
+- `0x30000`
 
-1. 在终端或命令提示符中运行Echidna二进制文件并指定智能合约文件的路径。例如：`echidna-test contracts/Overflow.sol`
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
 
-2. 等待Echidna完成测试。这可能需要几分钟或几小时，具体取决于您的计算机性能和合约复杂性。
+/*
+docker run -it --rm -v $PWD:/code trailofbits/eth-security-toolbox
+echidna EchidnaTestTimeAndCaller.sol --contract EchidnaTestTimeAndCaller
+*/
+contract EchidnaTestTimeAndCaller {
+    bool private pass = true;
+    uint256 private createdAt = block.timestamp;
 
-3. 查看Echidna生成的报告，并查找安全漏洞和错误。
+    /*
+    如果 Echidna 能调用 setFail()，测试会失败
+    否则测试会通过
+    */
+    function echidna_test_pass() public view returns (bool) {
+        return pass;
+    }
 
-## 结论
+    function setFail() external {
+        /*
+        如果 delay <= 最大区块延迟，Echidna 可以调用此函数
+        否则 Echidna 将无法调用此函数。
+        可以通过配置文件指定来延长最大区块延迟。
+        */
+        uint256 delay = 7 days;
+        require(block.timestamp >= createdAt + delay);
+        pass = false;
+    }
 
-通过使用Echidna进行智能合约测试，我们可以发现名为 `Overflow` 的合约存在整数溢出漏洞，可能会导致黑客攻击者窃取存储在合约中的资金。如果您正在编写智能合约，请使用Echidna等测试工具对其进行全面测试，以确保安全性和可靠性。
+    // 默认发送者
+    // 更改这些地址以查看测试失败
+    address[3] private senders =
+        [address(0x10000), address(0x20000), address(0x30000)];
+
+    address private sender = msg.sender;
+
+    // 将 _sender 作为输入，并要求 msg.sender == _sender
+    // 以便在反例中看到 _sender
+    function setSender(address _sender) external {
+        require(_sender == msg.sender);
+        sender = msg.sender;
+    }
+
+    // 检查默认发送者。发送者应为 3 个默认账户之一。
+    function echidna_test_sender() public view returns (bool) {
+        for (uint256 i; i < 3; i++) {
+            if (sender == senders[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+```
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

@@ -1,0 +1,644 @@
+# EVM 内存布局
+
+对应英文原页：https://solidity-by-example.org/evm/memory
+
+示例如下
+
+- 使用 `assembly` 读写内存
+- Solidity 中不同数据类型的内存布局
+- 外部调用的内存管理
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+// 内存布局
+// 长度为 2**256（32 字节）的数组，每个元素存储 1 字节（0x00 到 0xff）
+// index     0    1    2   ...   0xfff...fff = 2**256 - 1
+// memory | 00 | 00 | 00 | ... | 00 |
+
+// 保留槽
+// 0x00 - 0x3f（64 字节）：哈希方法的临时空间
+// 0x40 - 0x5f（32 字节）：空闲内存指针 —— 指向内存中下一个可用来存储数据的位置
+// 0x60 - 0x7f（32 字节）：零槽 —— 用作动态内存数组的初始值，永远不应写入
+
+// 空闲内存指针（0x40）
+// 0x80 = 空闲内存指针最初指向这里
+contract MemBasic {
+    // mstore(p, v) = 从内存位置 p 开始存储 32 字节
+    // mload(p) = 从内存位置 p 开始加载 32 字节
+    function test_1() public pure returns (bytes32 b32) {
+        assembly {
+            // 空闲内存指针
+            // p = 0x80
+            let p := mload(0x40)
+            mstore(p, 0xababab)
+            b32 := mload(p)
+        }
+    }
+
+    function test_2() public pure {
+        assembly {
+            mstore(0, 0x11)
+            // index: 从该索引起存储在内存中的 32 字节数据
+            //  0x00: 0x0000000000000000000000000000000000000000000000000000000000000011
+            mstore(1, 0x22)
+            //           0 1
+            //  0x00: 0x0000000000000000000000000000000000000000000000000000000000000000
+            //  0x20: 0x2200000000000000000000000000000000000000000000000000000000000000
+            mstore(2, 0x33)
+            //           0 1 2
+            //  0x00: 0x0000000000000000000000000000000000000000000000000000000000000000
+            //  0x20: 0x0033000000000000000000000000000000000000000000000000000000000000
+            mstore(3, 0x44)
+            //           0 1 2 3
+            //  0x00: 0x0000000000000000000000000000000000000000000000000000000000000000
+            //  0x20: 0x0000440000000000000000000000000000000000000000000000000000000000
+        }
+    }
+}
+
+contract MemStruct {
+    // 内存数据不打包 —— 所有数据以 32 字节块存储
+    struct Point {
+        uint256 x;
+        uint32 y;
+        uint32 z;
+    }
+
+    function test_read()
+        public
+        pure
+        returns (uint256 x, uint256 y, uint256 z)
+    {
+        // Point 从 0x80 开始加载到内存
+        // 0x80 = 初始空闲内存
+        Point memory p = Point(1, 2, 3);
+
+        assembly {
+            // 从 0x80 开始加载 32 字节
+            x := mload(0x80)
+            // 从 0xa0 开始加载 32 字节（0x80 + 32 = 0xa0）
+            y := mload(0xa0)
+            // 从 0xc0 开始加载 32 字节（0xa0 + 32 = 0xc0）
+            z := mload(0xc0)
+        }
+    }
+
+    function test_write()
+        public
+        pure
+        returns (bytes32 free_mem_ptr, uint256 x, uint256 y, uint256 z)
+    {
+        // 为 Point 分配内存 0x80 到 0xdf
+        // 空闲内存指针 = 0xdf + 1 = 0xe0
+        Point memory p;
+
+        // 写入
+        assembly {
+            // 存到 0x80
+            mstore(p, 11)
+            // 存到 0xa0
+            mstore(add(p, 0x20), 22)
+            // 存到 0xc0
+            mstore(add(p, 0x40), 33)
+            // 0xe0
+            free_mem_ptr := mload(0x40)
+        }
+
+        x = p.x;
+        y = p.y;
+        z = p.z;
+    }
+}
+
+contract MemFixedArray {
+    function test_read()
+        public
+        pure
+        returns (uint256 a0, uint256 a1, uint256 a2)
+    {
+        // arr 从 0x80 开始加载到内存
+        // 每个数组元素存储为 32 字节
+        uint32[3] memory arr = [uint32(1), uint32(2), uint32(3)];
+
+        assembly {
+            a0 := mload(0x80)
+            a1 := mload(0xa0)
+            a2 := mload(0xc0)
+        }
+    }
+
+    function test_write()
+        public
+        pure
+        returns (uint256 a0, uint256 a1, uint256 a2)
+    {
+        uint32[3] memory arr;
+
+        assembly {
+            // 0x80
+            mstore(arr, 11)
+            // 0xa0
+            mstore(add(arr, 0x20), 22)
+            // 0xc0
+            mstore(add(arr, 0x40), 33)
+        }
+
+        a0 = arr[0];
+        a1 = arr[1];
+        a2 = arr[2];
+    }
+}
+
+contract MemDynamicArray {
+    function test_read()
+        public
+        pure
+        returns (bytes32 p, uint256 len, uint256 a0, uint256 a1, uint256 a2)
+    {
+        uint256[] memory arr = new uint256[](5);
+        arr[0] = uint256(11);
+        arr[1] = uint256(22);
+        arr[2] = uint256(33);
+        arr[3] = uint256(44);
+        arr[4] = uint256(55);
+
+        assembly {
+            p := arr
+            // 0x80
+            len := mload(arr)
+            // 0xa0
+            a0 := mload(add(arr, 0x20))
+            // 0xc0
+            a1 := mload(add(arr, 0x40))
+            // 0xe0
+            a2 := mload(add(arr, 0x60))
+        }
+    }
+
+    function test_write() public pure returns (bytes32 p, uint256[] memory) {
+        uint256[] memory arr = new uint256[](0);
+
+        assembly {
+            p := arr
+            // 存储 arr 的长度
+            mstore(arr, 3)
+            // 存储 1、2、3
+            mstore(add(arr, 0x20), 11)
+            mstore(add(arr, 0x40), 22)
+            mstore(add(arr, 0x60), 33)
+            // 更新空闲内存指针
+            mstore(0x40, add(arr, 0x80))
+        }
+
+        // 当 arr 返回给调用者时，数据会按 ABI 编码
+        return (p, arr);
+    }
+}
+
+contract MemInternalFuncReturn {
+    function internal_func_return_val() private pure returns (uint256) {
+        return uint256(0xababab);
+    }
+
+    function test_val() public pure {
+        // 0xababab 会存储在栈顶
+        internal_func_return_val();
+    }
+
+    function internal_func_return_mem()
+        private
+        pure
+        returns (bytes32[] memory)
+    {
+        bytes32[] memory arr = new bytes32[](3);
+        arr[0] = bytes32(uint256(0xaaa));
+        arr[1] = bytes32(uint256(0xbbb));
+        arr[2] = bytes32(uint256(0xccc));
+        return arr;
+    }
+
+    function test_mem()
+        public
+        pure
+        returns (uint256 len, bytes32 a0, bytes32 a1, bytes32 a2)
+    {
+        // 将 0x80 存到栈顶
+        // 0x80 = 指向 arr 起始位置的内存指针
+        internal_func_return_mem();
+        // 用汇编从 arr 读取数据，arr 在 internal_func_return_mem 中初始化
+        assembly {
+            len := mload(0x80)
+            a0 := mload(0xa0)
+            a1 := mload(0xc0)
+            a2 := mload(0xe0)
+        }
+    }
+}
+
+contract ABIEncode {
+    // 将字符串按 64 长度切块的 js 代码
+    // str.match(/.{1,64}/g)
+
+    // 小于 32 字节的值类型 -> 左侧补零
+    // 0x000000000000000000000000abababababababababababababababababababab
+    function encode_addr() public pure returns (bytes memory) {
+        address addr = 0xABaBaBaBABabABabAbAbABAbABabababaBaBABaB;
+        return abi.encode(addr);
+    }
+
+    // 定长 bytes -> 右侧补零
+    // 0xaabbccdd00000000000000000000000000000000000000000000000000000000
+    function encode_bytes4() public pure returns (bytes memory) {
+        bytes4 b4 = 0xaabbccdd;
+        return abi.encode(b4);
+    }
+
+    // 动态大小类型
+    // offset | length | data
+    // offset = 数据起始位置的 32 字节索引
+    // length = 32 字节的数据长度
+
+    // 0x0000000000000000000000000000000000000000000000000000000000000020
+    //   0000000000000000000000000000000000000000000000000000000000000003
+    //   ababab0000000000000000000000000000000000000000000000000000000000
+    function encode_bytes() public pure returns (bytes memory) {
+        bytes memory b = new bytes(3);
+        b[0] = 0xab;
+        b[1] = 0xab;
+        b[2] = 0xab;
+        return abi.encode(b);
+    }
+
+    // 0x0000000000000000000000000000000000000000000000000000000000000020
+    //   0000000000000000000000000000000000000000000000000000000000000003
+    //   0000000000000000000000000000000000000000000000000000000000000001
+    //   0000000000000000000000000000000000000000000000000000000000000002
+    //   0000000000000000000000000000000000000000000000000000000000000003
+    function encode_uint8_arr() public pure returns (bytes memory) {
+        uint8[] memory a = new uint8[](3);
+        a[0] = 1;
+        a[1] = 2;
+        a[2] = 3;
+        return abi.encode(a);
+    }
+
+    // 定长数组
+    // 0x0000000000000000000000000000000000000000000000000000000000000001
+    //   0000000000000000000000000000000000000000000000000000000000000002
+    //   0000000000000000000000000000000000000000000000000000000000000003
+    function encode_uint256_fixed_size_arr()
+        public
+        pure
+        returns (bytes memory)
+    {
+        uint8[3] memory a;
+        a[0] = 1;
+        a[1] = 2;
+        a[2] = 3;
+        return abi.encode(a);
+    }
+
+    // 结构体
+    struct Point {
+        uint256 x;
+        uint128 y;
+        uint128 z;
+    }
+
+    // 0x0000000000000000000000000000000000000000000000000000000000000001
+    //   0000000000000000000000000000000000000000000000000000000000000002
+    //   0000000000000000000000000000000000000000000000000000000000000003
+    function encode_struct() public pure returns (bytes memory) {
+        Point memory p = Point(1, 2, 3);
+        return abi.encode(p);
+    }
+
+    // 结构体的动态数组
+    // offset | length | struct data
+    // 0x0000000000000000000000000000000000000000000000000000000000000020
+    //   0000000000000000000000000000000000000000000000000000000000000003
+    //   0000000000000000000000000000000000000000000000000000000000000001
+    //   0000000000000000000000000000000000000000000000000000000000000002
+    //   0000000000000000000000000000000000000000000000000000000000000003
+    //   0000000000000000000000000000000000000000000000000000000000000004
+    //   0000000000000000000000000000000000000000000000000000000000000005
+    //   0000000000000000000000000000000000000000000000000000000000000006
+    //   0000000000000000000000000000000000000000000000000000000000000007
+    //   0000000000000000000000000000000000000000000000000000000000000008
+    //   0000000000000000000000000000000000000000000000000000000000000009
+    function encode_struct_array() public pure returns (bytes memory) {
+        Point[] memory arr = new Point[](3);
+        arr[0] = Point(1, 2, 3);
+        arr[1] = Point(4, 5, 6);
+        arr[2] = Point(7, 8, 9);
+        return abi.encode(arr);
+    }
+}
+
+contract MemReturn {
+    function test_return_vals() public pure returns (uint256, uint256) {
+        // return(start, len) - 停止执行，并返回内存中从 start 到 start + len 存储的数据
+        assembly {
+            mstore(0x80, 11)
+            mstore(0xa0, 22)
+            return(0x80, 0x40)
+        }
+    }
+
+    function test_return_dyn_arr() public pure returns (uint256[] memory) {
+        // 对含 3 个元素 11、22 和 33 的 uint256[] 数组做 ABI 编码
+        assembly {
+            // offset
+            mstore(0x80, 0x20)
+            // length
+            mstore(add(0x80, 0x20), 3)
+            // 数组元素
+            mstore(add(0x80, 0x40), 11)
+            mstore(add(0x80, 0x60), 22)
+            mstore(add(0x80, 0x80), 33)
+            // 无需更新空闲内存指针 —— 函数执行到此结束
+            return(0x80, mul(5, 0x20))
+        }
+    }
+
+    function test_return() public pure returns (uint256, uint256) {
+        // 返回 (11, 22)
+        test_return_vals();
+        // 这段代码永远不会执行
+        return (333, 444);
+    }
+}
+
+contract MemRevert {
+    function test_revert() public pure {
+        // revert(start, len) - 回退执行，并返回内存中从 start 到 start + len 存储的数据
+        assembly {
+            mstore(0x80, "ERROR HERE")
+            revert(0x80, 0x20)
+        }
+    }
+
+    function test_revert_with_error_msg() public pure {
+        assembly {
+            let p := mload(0x40)
+            // Error(string) 的函数选择器
+            // 0x08c379a000000000000000000000000000000000000000000000000000000000
+            // 0x08c379a0 是 32 位，左移 224 位使其成为 256 位
+            // 255 - 31 = 224
+            mstore(p, shl(224, 0x08c379a0))
+            // 字符串偏移
+            mstore(add(p, 0x04), 0x20)
+            // 字符串长度
+            mstore(add(p, 0x24), 5)
+            // 消息（必须小于 32 字节）
+            mstore(add(p, 0x44), "ERROR")
+            // 函数选择器 + offset + 字符串长度 + 字符串消息
+            // = 0x04 + 0x20 + 0x20 + 0x20
+            // = 0x64
+            revert(p, 0x64)
+        }
+    }
+}
+
+contract MemKeccak {
+    function test_keccak() public pure returns (bytes32) {
+        // keccak256(start, len) - 对内存中从 start 到 start + len 的数据做 Keccak256
+        assembly {
+            mstore(0x80, 1)
+            mstore(0xa0, 2)
+
+            let h := keccak256(0x80, 0x40)
+            mstore(0xc0, h)
+
+            return(0xc0, 0x20)
+        }
+    }
+
+    function keccak() public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(uint256(1), uint256(2)));
+    }
+}
+
+contract Target {
+    function return_uint256(uint256 x) public pure returns (uint256) {
+        return x;
+    }
+
+    function return_bytes(uint256 n) public pure returns (bytes memory) {
+        bytes memory out = new bytes(n);
+        for (uint256 i; i < n; i++) {
+            out[i] = 0xab;
+        }
+        return out;
+    }
+
+    function return_uint256_arr(uint256 n)
+        public
+        pure
+        returns (uint256[] memory)
+    {
+        uint256[] memory out = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) {
+            out[i] = i + 1;
+        }
+        return out;
+    }
+}
+
+// calldatacopy(p, start, size) - 将 calldata 从 start 到 start + size 复制到从指针 p 开始的内存
+// returndatasize - 获取 call、staticcall 或 delegatecall 返回数据的大小
+// returndatacopy(p, start, size) - 将返回数据从 start 到 start + size 复制到从指针 p 开始的内存
+// call(g, a, v, in, in_size, out, out_size)
+// - 调用地址 a 处的合约，最多使用 g gas，发送 v wei
+// - 输入取自内存 in 到 in + in_size
+// - 使用内存 out 到 out + out_size 存放输出
+// staticcall(g, a, in, in_size, out, out_size) - call 的只读版本
+contract YulStaticCall {
+    function test_staticcall(address a, bytes calldata data) public view {
+        assembly {
+            let p := mload(0x40)
+            // 将 calldata 复制到内存
+            calldatacopy(p, data.offset, data.length)
+
+            let ok := staticcall(gas(), a, p, data.length, 0, 0)
+
+            if iszero(ok) { revert(0, 0) }
+
+            // p := mload(0x40)
+            let return_data_size := returndatasize()
+            // 将返回数据复制到内存
+            // 覆盖曾用于输入的内存是否安全？
+            returndatacopy(p, 0, return_data_size)
+            return(p, return_data_size)
+        }
+    }
+
+    function test_abi_decode_uint256(address a, bytes calldata data)
+        public
+        view
+        returns (uint256)
+    {
+        test_staticcall(a, data);
+    }
+
+    function test_abi_decode_bytes(address a, bytes calldata data)
+        public
+        view
+        returns (bytes memory)
+    {
+        test_staticcall(a, data);
+    }
+
+    function test_abi_decode_uint256_arr(address a, bytes calldata data)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        test_staticcall(a, data);
+    }
+
+    function test_staticcall_return_abi_encoded_bytes(
+        address addr,
+        bytes calldata data
+    ) public view returns (bytes memory out, uint256 return_data_size) {
+        assembly {
+            let p := mload(0x40)
+            // 将 calldata 复制到内存
+            calldatacopy(p, data.offset, data.length)
+            // 更新空闲内存指针
+            mstore(0x40, add(p, data.length))
+
+            let ok := staticcall(gas(), addr, p, data.length, 0, 0)
+
+            if iszero(ok) { revert(0, 0) }
+
+            // return_data_size = 32  调用 Target.return_uint256 -> uint256
+            //                  = 96  调用 Target.return_bytes -> bytes[]（32 offset、32 length、3 字节填充到 32）
+            //                  = 160 调用 Target.return_uint256_arr -> uint256[]（32 offset、32 length、32 x 3 个元素）
+            return_data_size := returndatasize()
+            // 将返回数据长度存入 out
+            // 指向 out 的指针 = 0x60（零槽）
+            mstore(out, return_data_size)
+            // 将返回数据复制到 out
+            returndatacopy(add(out, 0x20), 0, return_data_size)
+            // 更新空闲内存指针
+            mstore(0x40, add(out, add(0x20, return_data_size)))
+        }
+    }
+}
+
+contract Counter {
+    uint256 public count;
+
+    function inc() public returns (uint256) {
+        count += 1;
+        return count;
+    }
+}
+
+contract YulCall {
+    function test_call(address a, bytes memory data)
+        public
+        payable
+        returns (bytes memory out)
+    {
+        assembly {
+            // 0x80
+            let data_ptr := data
+            // 0x60
+            let out_ptr := out
+
+            let data_size := mload(data)
+            let data_start := add(data, 0x20)
+            let ok := call(gas(), a, callvalue(), data_start, data_size, 0, 0)
+
+            if iszero(ok) { revert(0, 0) }
+
+            let return_data_size := returndatasize()
+            // 将返回数据长度存入 out
+            mstore(out, return_data_size)
+            // 将返回数据复制到 out
+            returndatacopy(add(out, 0x20), 0, return_data_size)
+            // 更新空闲内存指针
+            mstore(0x40, add(out, add(0x20, return_data_size)))
+        }
+    }
+
+    function test_inc(address counter) public returns (uint256 count) {
+        bytes memory res = test_call(counter, abi.encodeCall(Counter.inc, ()));
+        count = abi.decode(res, (uint256));
+    }
+}
+
+// 内存扩展 gas 成本
+// gas 成本与内存分配呈二次关系。
+contract MemExp {
+    function alloc_mem(uint256 n) external view returns (uint256) {
+        uint256 gas_start = gasleft();
+        uint256[] memory arr = new uint256[](n);
+        uint256 gas_end = gasleft();
+        return gas_start - gas_end;
+    }
+}
+
+// arr size | gas
+//        0 |    120
+//        1 |    178
+//       10 |    232
+//       20 |    293
+//       30 |    354
+//       40 |    415
+//       50 |    477
+//       60 |    540
+//       70 |    602
+//       80 |    666
+//       90 |    729
+//      100 |    793
+//      110 |    857
+//      120 |    922
+//      130 |    987
+//      140 |   1053
+//      150 |   1118
+//      160 |   1185
+//      170 |   1251
+//      180 |   1318
+//      190 |   1386
+//      200 |   1454
+
+//     1000 |   8144
+//     2000 |  20023
+//     3000 |  35808
+//     4000 |  55500
+//     5000 |  79097
+//     6000 | 106601
+//     7000 | 138011
+//     8000 | 173328
+//     9000 | 212550
+//    10000 | 255679
+//    11000 | 302715
+//    12000 | 353656
+//    13000 | 408504
+//    14000 | 467257
+//    15000 | 529918
+//    16000 | 596484
+//    17000 | 666957
+//    18000 | 741336
+//    19000 | 819621
+//    20000 | 901812
+
+```
+
+### 参考资料
+
+[Solidity 文档](https://docs.soliditylang.org/en/latest/internals/layout_in_memory.html)
+
+[EVM Codes](https://www.evm.codes/)
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

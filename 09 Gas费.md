@@ -1,45 +1,49 @@
-# Gas费
+# Gas 与 Gas Price
 
-你需要支付多少以太币来进行一次交易？
-你需要支付 gas 消耗量 * gas 价格 的以太币，其中：
+对应英文原页：https://solidity-by-example.org/gas
 
-gas 是计算单位\
+### 一笔交易需要支付多少 `ether`？
 
-gas 消耗量是交易中使用的总 gas 数量\
+你需要支付 `gas spent * gas price` 数量的 `ether`，其中
 
-gas 价格是你愿意支付的每单位 gas 的以太币\
+- `gas` 是计算单位
+- `gas spent` 是交易中使用的 `gas` 总量
+- `gas price` 是你愿意为每单位 `gas` 支付的 `ether` 数量
 
-具有更高 gas 价格的交易具有更高的优先级被包含在区块中。\
-未使用的 gas 将被退还。
+gas price 更高的交易会优先被打包进区块。
 
-燃气限制\
-你可以花费的 gas 有两个上限\
-- gas 限制（你为交易设置的最大 gas 量）\
-- 区块 gas 限制（网络设置的区块中允许的最大 gas 量）
+未使用的 gas 会被退还。
+
+### Gas 上限（Gas Limit）
+
+你可以花费的 gas 有两个上限
+
+- `gas limit`（你为交易设置的、愿意使用的最大 gas 数量）
+- `block gas limit`（网络设置的、一个区块中允许的最大 gas 数量）
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.26;
 
 contract Gas {
-uint public i = 0;
+    uint256 public i = 0;
 
-  // 使用完你发送的所有 gas 会导致你的交易失败。
-  // 状态更改被撤销。
-  // 花费的 gas 不会被退还。
-  function forever() public {
-      // 在这里，我们运行一个循环直到花费所有的 gas
-      // 交易失败
-      while (true) {
-          i += 1;
-      }
-  }
+    // 用尽你发送的全部 gas 会导致交易失败。
+    // 状态更改会被撤销。
+    // 已花费的 gas 不会退还。
+    function forever() public {
+        // 这里我们运行一个循环，直到用尽全部 gas
+        // 并且交易失败
+        while (true) {
+            i += 1;
+        }
+    }
 }
 ```
-代码术语解释：
 
-- gas：以太坊中的计算单位。\
-- gas spent：在交易中使用的 gas 总数。\
-- gas price：为每单位 gas 所支付的以太币数量。\
-- gas limit：交易中可使用的最大 gas 数量，由用户设置。\
-- 区块 gas 限制：每个区块中允许的最大 gas 数量，由网络设置。
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

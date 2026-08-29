@@ -1,0 +1,40 @@
+# 标签
+
+对应英文原页：https://solidity-by-example.org/foundry/label
+
+使用 `vm.label` 给合约贴上标签
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import "forge-std/Test.sol";
+
+address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+interface IERC20 {
+    function balanceOf(address) external view returns (uint256);
+}
+
+contract LabelTest is Test {
+    IERC20 weth;
+
+    function setUp() public {
+        weth = IERC20(WETH);
+        // 给地址贴上 "WETH" 标签，该标签会显示在堆栈跟踪中
+        vm.label(WETH, "WETH");
+    }
+
+    function test() public {
+        console.log("%e", weth.balanceOf(address(this)));
+    }
+}
+
+```
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

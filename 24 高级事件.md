@@ -1,0 +1,105 @@
+# 高级事件
+
+对应英文原页：https://solidity-by-example.org/events-advanced
+
+本页介绍与 Solidity 事件相关的进阶主题和用例，建立在 [事件](23 事件.md) 页所讲基础知识之上。
+
+Solidity 中的 `Events`（事件）功能强大，可以实现多种进阶能力和架构。事件的一些进阶用例包括：
+
+- 事件过滤与监控，用于实时更新与分析
+- 事件日志分析与解码，用于数据提取与处理
+- 去中心化应用（dApp）的事件驱动架构
+- 事件订阅，用于实时通知与更新
+
+## 事件驱动架构
+
+`EventDrivenArchitecture` 合约演示了一种事件驱动架构：用事件来协调并触发流程的不同阶段，例如发起转账和确认转账。
+
+## 事件订阅与实时更新
+
+`EventSubscription` 合约展示如何实现事件订阅，让外部合约或客户端在事件发出时订阅并接收实时更新。它还演示了如何处理事件订阅以及如何管理订阅的生命周期。
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+// 事件驱动架构
+contract EventDrivenArchitecture {
+    event TransferInitiated(
+        address indexed from, address indexed to, uint256 value
+    );
+    event TransferConfirmed(
+        address indexed from, address indexed to, uint256 value
+    );
+
+    mapping(bytes32 => bool) public transferConfirmations;
+
+    function initiateTransfer(address to, uint256 value) public {
+        emit TransferInitiated(msg.sender, to, value);
+        // ...（发起转账的逻辑）
+    }
+
+    function confirmTransfer(bytes32 transferId) public {
+        require(
+            !transferConfirmations[transferId], "Transfer already confirmed"
+        );
+        transferConfirmations[transferId] = true;
+        emit TransferConfirmed(msg.sender, address(this), 0);
+        // ...（确认转账的逻辑）
+    }
+}
+
+// 事件订阅与实时更新
+interface IEventSubscriber {
+    function handleTransferEvent(address from, address to, uint256 value)
+        external;
+}
+
+contract EventSubscription {
+    event LogTransfer(address indexed from, address indexed to, uint256 value);
+
+    mapping(address => bool) public subscribers;
+    address[] public subscriberList;
+
+    function subscribe() public {
+        require(!subscribers[msg.sender], "Already subscribed");
+        subscribers[msg.sender] = true;
+        subscriberList.push(msg.sender);
+    }
+
+    function unsubscribe() public {
+        require(subscribers[msg.sender], "Not subscribed");
+        subscribers[msg.sender] = false;
+        for (uint256 i = 0; i < subscriberList.length; i++) {
+            if (subscriberList[i] == msg.sender) {
+                subscriberList[i] = subscriberList[subscriberList.length - 1];
+                subscriberList.pop();
+                break;
+            }
+        }
+    }
+
+    function transfer(address to, uint256 value) public {
+        emit LogTransfer(msg.sender, to, value);
+        for (uint256 i = 0; i < subscriberList.length; i++) {
+            IEventSubscriber(subscriberList[i]).handleTransferEvent(
+                msg.sender, to, value
+            );
+        }
+    }
+}
+```
+
+## 最佳实践与建议
+
+- 为正确的事件参数建立索引，以便高效过滤和搜索。地址通常应当建立索引，而金额一般不应当。
+- 避免冗余事件：不要发出底层库或合约已经覆盖的事件。
+- 不能在 `view` 或 `pure` 函数中使用事件，因为它们通过存储日志改变了区块链状态。
+- 注意发出事件的 gas 成本，尤其是在为参数建立索引时，因为它会影响合约的总体 gas 消耗。
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

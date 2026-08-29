@@ -1,0 +1,62 @@
+# 映射
+
+对应英文原页：https://solidity-by-example.org/mapping
+
+映射（mapping）使用语法 `mapping(keyType => valueType)` 创建。
+
+`keyType` 可以是任何内置值类型、bytes、string，或任意合约。
+
+`valueType` 可以是任意类型，包括另一个 mapping 或数组。
+
+映射不可迭代。
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+contract Mapping {
+    // 从 address 到 uint 的映射
+    mapping(address => uint256) public myMap;
+
+    function get(address _addr) public view returns (uint256) {
+        // 映射总会返回一个值。
+        // 如果该值从未被设置，将返回默认值。
+        return myMap[_addr];
+    }
+
+    function set(address _addr, uint256 _i) public {
+        // 更新该地址处的值
+        myMap[_addr] = _i;
+    }
+
+    function remove(address _addr) public {
+        // 将该值重置为默认值。
+        delete myMap[_addr];
+    }
+}
+
+contract NestedMapping {
+    // 嵌套映射（从 address 到另一个 mapping）
+    mapping(address => mapping(uint256 => bool)) public nested;
+
+    function get(address _addr1, uint256 _i) public view returns (bool) {
+        // 即使尚未初始化，也可以从嵌套映射中取值
+        return nested[_addr1][_i];
+    }
+
+    function set(address _addr1, uint256 _i, bool _boo) public {
+        nested[_addr1][_i] = _boo;
+    }
+
+    function remove(address _addr1, uint256 _i) public {
+        delete nested[_addr1][_i];
+    }
+}
+```
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

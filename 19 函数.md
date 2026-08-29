@@ -1,0 +1,92 @@
+# 函数
+
+对应英文原页：https://solidity-by-example.org/function
+
+函数有多种方式可以返回输出。
+
+公开（public）函数不能将某些数据类型作为输入或输出。
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+contract Function {
+    // 函数可以返回多个值。
+    function returnMany() public pure returns (uint256, bool, uint256) {
+        return (1, true, 2);
+    }
+
+    // 返回值可以命名。
+    function named() public pure returns (uint256 x, bool b, uint256 y) {
+        return (1, true, 2);
+    }
+
+    // 返回值可以赋给它们的名称。
+    // 在这种情况下可以省略 return 语句。
+    function assigned() public pure returns (uint256 x, bool b, uint256 y) {
+        x = 1;
+        b = true;
+        y = 2;
+    }
+
+    // 调用另一个返回多个值的函数时，使用解构赋值。
+    function destructuringAssignments()
+        public
+        pure
+        returns (uint256, bool, uint256, uint256, uint256)
+    {
+        (uint256 i, bool b, uint256 j) = returnMany();
+
+        // 可以省略某些值。
+        (uint256 x,, uint256 y) = (4, 5, 6);
+
+        return (i, b, j, x, y);
+    }
+
+    // 不能将 mapping 用作输入或输出
+
+    // 可以将数组用作输入
+    function arrayInput(uint256[] memory _arr) public {}
+
+    // 可以将数组用作输出
+    uint256[] public arr;
+
+    function arrayOutput() public view returns (uint256[] memory) {
+        return arr;
+    }
+}
+
+// 使用键值对作为输入来调用函数
+contract XYZ {
+    function someFuncWithManyInputs(
+        uint256 x,
+        uint256 y,
+        uint256 z,
+        address a,
+        bool b,
+        string memory c
+    ) public pure returns (uint256) {}
+
+    function callFunc() external pure returns (uint256) {
+        return someFuncWithManyInputs(1, 2, 3, address(0), true, "c");
+    }
+
+    function callFuncWithKeyValue() external pure returns (uint256) {
+        return someFuncWithManyInputs({
+            a: address(0),
+            b: true,
+            c: "c",
+            x: 1,
+            y: 2,
+            z: 3
+        });
+    }
+}
+```
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

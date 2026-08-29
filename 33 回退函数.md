@@ -1,0 +1,120 @@
+# 回退函数
+
+对应英文原页：https://solidity-by-example.org/fallback
+
+`fallback` 是一个特殊函数，会在以下任一情况执行：
+
+- 调用了不存在的函数，或
+- 以太币被直接发送到合约，但 `receive()` 不存在，或者 `msg.data` 不为空
+
+要更好地理解 Solidity 在什么条件下会调用 `receive` 或 `fallback` 函数，请参考下面的流程图：
+
+```
+                 发送以太币
+                      |
+           msg.data 为空？
+                /           \
+            是              否
+             |                |
+    存在 receive()？     fallback()
+        /        \
+     是           否
+      |            |
+  receive()     fallback()
+```
+
+当由 `transfer` 或 `send` 调用时，`fallback` 有 2300 gas 的限制。
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+contract Fallback {
+    event Log(string func, uint256 gas);
+
+    // 回退函数必须声明为 external。
+    fallback() external payable {
+        // send / transfer（向此回退函数转发 2300 gas）
+        // call（转发全部 gas）
+        emit Log("fallback", gasleft());
+    }
+
+    // receive 是 fallback 的一种变体，在 msg.data 为空时触发
+    receive() external payable {
+        emit Log("receive", gasleft());
+    }
+
+    // 用于查看本合约余额的辅助函数
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+}
+
+contract SendToFallback {
+    function transferToFallback(address payable _to) public payable {
+        _to.transfer(msg.value);
+    }
+
+    function callFallback(address payable _to) public payable {
+        (bool sent,) = _to.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+    }
+}
+```
+
+`fallback` 可以选择接收 `bytes` 作为输入并返回 `bytes` 作为输出
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+// TestFallbackInputOutput -> FallbackInputOutput -> Counter
+contract FallbackInputOutput {
+    address immutable target;
+
+    constructor(address _target) {
+        target = _target;
+    }
+
+    fallback(bytes calldata data) external payable returns (bytes memory) {
+        (bool ok, bytes memory res) = target.call{value: msg.value}(data);
+        require(ok, "call failed");
+        return res;
+    }
+}
+
+contract Counter {
+    uint256 public count;
+
+    function get() external view returns (uint256) {
+        return count;
+    }
+
+    function inc() external returns (uint256) {
+        count += 1;
+        return count;
+    }
+}
+
+contract TestFallbackInputOutput {
+    event Log(bytes res);
+
+    function test(address _fallback, bytes calldata data) external {
+        (bool ok, bytes memory res) = _fallback.call(data);
+        require(ok, "call failed");
+        emit Log(res);
+    }
+
+    function getTestData() external pure returns (bytes memory, bytes memory) {
+        return
+            (abi.encodeCall(Counter.get, ()), abi.encodeCall(Counter.inc, ()));
+    }
+}
+```
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)

@@ -1,0 +1,62 @@
+# Foundry 基础
+
+对应英文原页：https://solidity-by-example.org/foundry/basic
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import {Test, console2, stdError} from "forge-std/Test.sol";
+
+contract Counter {
+    uint256 public count;
+
+    function inc() external {
+        count += 1;
+    }
+
+    function dec() external {
+        count -= 1;
+    }
+}
+
+contract CounterTest is Test {
+    Counter public counter;
+
+    // 每个测试前调用
+    function setUp() public {
+        counter = new Counter();
+    }
+
+    function testInc() public {
+        counter.inc();
+        assertEq(counter.count(), 1);
+    }
+
+    function testFailDec() public {
+        // 这会因下溢而失败
+        counter.dec();
+    }
+
+    // 与 testFailDec 相同
+    function testDecUnderflow() public {
+        vm.expectRevert(stdError.arithmeticError);
+        counter.dec();
+    }
+
+    function testDec() public {
+        counter.inc();
+        counter.inc();
+        counter.dec();
+        assertEq(counter.count(), 1);
+    }
+}
+
+```
+
+---
+## 关注我们
+[Yanbo的Twitter](https://x.com/Yanbo2004)｜[Web3Club的Twitter](https://twitter.com/Web3ClubCN)
+
+
+[加入我们](https://github.com/Web3-Club/Intro./blob/main/Join%20club.md)
